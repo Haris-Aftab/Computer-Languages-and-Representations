@@ -1,0 +1,59 @@
+exec (acomp a) (0,s,[]) == (length (acomp a), s, [aval a s])
+
+Proof:
+
+----------------------------------------------------------------------------------------------
+
+Using induction to show the value on which the program counter ends on with 'length (acomp a)'
+
+Base Case a = (N x) :
+length (acomp (N x))
+    [applying acomp] = length ([LOADI x])
+   [applying length] = 1
+
+Base Case a = (V v) :
+length (acomp (V v))
+    [applying acomp] = length ([LOAD v])
+   [applying length] = 1
+
+Base Case a = (Plus a1 a2) :
+length (acomp (Plus a1 a2))
+           [applying acomp] = length (acomp a1 ++ acomp a2 ++ [ADD])
+          [applying length] = 3
+
+----------------------------------------------------------------------------------------------
+
+Verify correctness of compilation for arithmetic expression by proving the following property:
+exec (acomp a) (0,s,[]) == (length (acomp a), s, [aval a s])
+
+Base Case:
+
+Base Case a = (N x) : 
+exec (acomp (N x)) (0,s,[])
+           [applying acomp] = exec [LOADI x] (0 , s, [])
+            [applying exec] = (1 , s, [x])
+          [unapplying aval] = (1, s, [aval (N x) s])
+
+          
+Base Case a  = (V v) :
+exec (acomp (V v)) (0,s,[])
+           [applying acomp] = exec [LOAD v] (0, s, [])
+            [applying exec] = (1, s, [s ! v])
+          [unapplying aval] = (1, s, [aval (V v) s])
+
+
+Inductive Case:
+
+Assume a = (Plus a1 a2) :
+exec (acomp (Plus a1 a2)) (0,s,[])
+                  [applying acomp] = exec (acomp a1 ++ acomp a2 ++ [ADD]) (0, s, [])
+             [associativity of ++] = exec (acomp a1 ++ (acomp a2 ++ [ADD])) (0, s, [])
+                  [distributivity] = exec (acomp a2 ++ [ADD]) (exec (acomp a1) (0, s, []))
+     [induction hypothesis for a1] = exec (acomp a2 ++ [ADD]) (1, s, [aval a1 s])
+                  [distributivity] = exec [ADD] (exec (acomp a2) (1, s, [aval a1 s]))
+     [induction hypothesis for a2] = exec [ADD] (2, s, [aval a2 s, aval a1 s])
+                   [applying exec] = (3, s, [aval a1 s + aval a2 s])
+                 [unapplying aval] = (3, s, [aval (Plus a1 a2) s])
+
+----------------------------------------------------------------------------------------------
+
